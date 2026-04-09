@@ -476,6 +476,76 @@ footer {
   font-size: 0.8rem;
 }
 
+/* Share button and menu */
+.activity-share {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 6px;
+  position: relative;
+}
+
+.share-button {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  padding: 4px 10px;
+  border-radius: 15px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.share-button:hover {
+  background-color: var(--primary-light);
+  color: white;
+  border-color: var(--primary-light);
+}
+
+.share-menu {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  right: 0;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  min-width: 180px;
+  overflow: hidden;
+}
+
+.share-menu-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 8px 14px;
+  font-size: 0.8rem;
+  color: var(--text-primary);
+  background: none;
+  border: none;
+  border-radius: 0;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.15s;
+  text-align: left;
+  gap: 8px;
+}
+
+.share-menu-item:hover {
+  background-color: var(--background);
+  color: var(--text-primary);
+}
+
+/* Highlighted activity card (opened from a share link) */
+.activity-highlight {
+  border-color: var(--secondary) !important;
+  box-shadow: 0 0 0 2px rgba(255, 111, 0, 0.3),
+    0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
 /* Search and Filter Components - Updated for Sidebar */
 .search-box {
   display: flex;
