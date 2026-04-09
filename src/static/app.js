@@ -569,6 +569,11 @@ document.addEventListener("DOMContentLoaded", () => {
         `
         }
       </div>
+      <div class="activity-share">
+        <button class="share-button" data-activity="${name}" aria-label="Share ${name}">
+          🔗 Share
+        </button>
+      </div>
     `;
 
     // Add click handlers for delete buttons
@@ -587,7 +592,109 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
+    // Add click handler for share button
+    const shareButton = activityCard.querySelector(".share-button");
+    shareButton.addEventListener("click", (event) => {
+      event.stopPropagation();
+      shareActivity(name, details, shareButton);
+    });
+
+    // Highlight and scroll to this card if it matches a shared link
+    const sharedActivity = getSharedActivityFromUrl();
+    if (sharedActivity && sharedActivity === name) {
+      activityCard.classList.add("activity-highlight");
+      setTimeout(() => {
+        activityCard.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 200);
+    }
+
     activitiesList.appendChild(activityCard);
+  }
+
+  // Get activity name from URL if opened via a share link
+  function getSharedActivityFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("activity");
+  }
+
+  // Generate a shareable URL for an activity
+  function getShareUrl(activityName) {
+    const url = new URL(window.location.href);
+    url.searchParams.set("activity", activityName);
+    return url.toString();
+  }
+
+  // Share an activity via the Web Share API or a fallback dropdown menu
+  function shareActivity(activityName, details, buttonElement) {
+    const shareUrl = getShareUrl(activityName);
+    const shareText = `Check out ${activityName} at Mergington High School! ${details.description}`;
+
+    // Use native Web Share API if available (mobile and modern browsers)
+    if (navigator.share) {
+      navigator
+        .share({
+          title: `${activityName} - Mergington High School`,
+          text: shareText,
+          url: shareUrl,
+        })
+        .catch((err) => {
+          if (err.name !== "AbortError") {
+            console.error("Error sharing:", err);
+          }
+        });
+      return;
+    }
+
+    // Close any other open share menus first
+    document.querySelectorAll(".share-menu").forEach((m) => m.remove());
+
+    // Build a small share menu for desktop browsers
+    const menu = document.createElement("div");
+    menu.className = "share-menu";
+    menu.innerHTML = `
+      <button class="share-menu-item" data-action="copy">📋 Copy Link</button>
+      <a class="share-menu-item"
+         href="https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}"
+         target="_blank" rel="noopener noreferrer">🐦 Share on Twitter</a>
+      <a class="share-menu-item"
+         href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}"
+         target="_blank" rel="noopener noreferrer">📘 Share on Facebook</a>
+    `;
+
+    buttonElement.closest(".activity-share").appendChild(menu);
+
+    // Copy link handler
+    menu.querySelector('[data-action="copy"]').addEventListener("click", () => {
+      navigator.clipboard
+        .writeText(shareUrl)
+        .then(() => {
+          showMessage("Link copied to clipboard!", "success");
+        })
+        .catch(() => {
+          // Fallback for browsers that don't support the Clipboard API
+          // document.execCommand is deprecated but kept here for backwards compatibility
+          const textArea = document.createElement("textarea");
+          textArea.value = shareUrl;
+          textArea.style.position = "fixed";
+          textArea.style.opacity = "0";
+          document.body.appendChild(textArea);
+          textArea.select();
+          document.execCommand("copy");
+          document.body.removeChild(textArea);
+          showMessage("Link copied to clipboard!", "success");
+        });
+      menu.remove();
+    });
+
+    // Close the menu when clicking anywhere outside it
+    setTimeout(() => {
+      document.addEventListener("click", function closeMenu(e) {
+        if (!menu.contains(e.target) && e.target !== buttonElement) {
+          menu.remove();
+          document.removeEventListener("click", closeMenu);
+        }
+      });
+    }, 0);
   }
 
   // Event listeners for search and filter
